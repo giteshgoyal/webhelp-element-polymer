@@ -1,12 +1,8 @@
 {
-  "name": "Walk-Tour",
-  "exportName": "Customizable Walk-Through Tour Element",
+  "name": "webhelp-tour",
+  "exportName": "webhelp-tour",
  "description": "The easiest way to show people how to use your website and What's New In It ",
-   "main": [
-    "walk-tour.html",
-    "help-behavior.html",
-    "walk-tour-icons.html"
-  ],
+   "main":"walk-tour.html",
   "keywords": [
     "walk-tour",
     "web-tour",
@@ -54,11 +50,7 @@
     "vulcanize": ">= 1.4.2"
   },
   "spm": {
-     "main": [
-    "walk-tour.html",
-    "help-behavior.html",
-    "walk-tour-icons.html"
-  ],
+       "main":"walk-tour.html",
     "ignore": [
     ]
   },
