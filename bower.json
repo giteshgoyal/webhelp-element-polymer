@@ -1,0 +1,29 @@
+{
+  "name": "webhelp-tour",
+  "description": "The easiest way to show people how to use your website and What's New In It",
+  "main": "walk-tour.html",
+  "authors": [
+    "giteshgoyal <giteshgoyal77@gmail.com>"
+  ],
+  "license": "MIT",
+  "keywords": [
+    "walk-tour",
+    "web-tour",
+    "help",
+    "customizable",
+    "website-tour",
+    "tour",
+    "guide",
+    "info",
+    "web-components",
+    "custom-element"
+  ],
+  "homepage": "https://github.com/giteshgoyal/webhelp-element-polymer.git",
+  "ignore": [
+    "**/.*",
+    "node_modules",
+    "bower_components",
+    "test",
+    "tests"
+  ]
+}
