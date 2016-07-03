@@ -1,0 +1,34 @@
+<!doctype html>
+<!--
+ Copyright 2015 The Polymer Authors. All rights reserved.
+ Use of this source code is governed by a BSD-style
+ license that can be found in the LICENSE file.
+-->
+<html>
+
+  <head>
+    <meta name="viewport" content="width=device-width, minimum-scale=1.0, initial-scale=1.0, user-scalable=yes">
+    <title>reCaptcha Test Runner</title>
+    <meta charset="UTF-8">
+
+    <script src="../../webcomponentsjs/webcomponents.min.js"></script>
+    <script src="../../web-component-tester/browser.js"></script>
+    <script src="TestUtils.js"></script>
+    <link rel="import" href="../google-recaptcha.html">
+
+  </head>
+
+  <body>
+  <script>
+    // Load and run all tests (.html, .js) as one suite:
+    WCT.loadSuites([
+      're-captcha-basic.html',
+      're-captcha-loading.html',
+      're-captcha-basic.js',
+      're-captcha-render.html'
+    ]);
+  </script>
+
+  </body>
+
+</html>

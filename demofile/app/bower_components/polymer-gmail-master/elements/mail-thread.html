@@ -1,0 +1,456 @@
+<link rel="import" href="../bower_components/polymer/polymer.html">
+<link rel="import" href="../bower_components/iron-icon/iron-icon.html">
+<link rel="import" href="../bower_components/paper-styles/paper-styles.html">
+<link rel="import" href="../bower_components/paper-icon-button/paper-icon-button.html">
+
+<!-- <link rel="import" href="../bower_components/iron-menu-behavior/iron-menu-behavior.html"> -->
+
+<link rel="import" href="profile-img.html">
+<link rel="import" href="swipeable-item.html">
+
+<!--
+A single GMail mail thread.
+
+##### Example
+
+    <mail-thread></mail-thread>
+-->
+<dom-module id="mail-thread">
+  <style>
+    :host {
+      display: block;
+      background-color: var(--paper-green-800);
+      transition: max-height 200ms ease-in-out 200ms;
+      max-height: 120px; /* bigger than thread can ever be. */
+    }
+    :host(:focus) {
+      z-index: 1;
+      position: relative;
+    }
+    :host(.shrink) {
+      max-height: 0;
+    }
+    :host([selected]) #thread {
+      background-color: #eee;
+    }
+    :host([narrow]) #actionicons {
+      display: none;
+    }
+    :host([archived][undo]) #archived {
+      opacity: 1;
+      transition: opacity 200ms ease-in-out 400ms;
+    }
+    #container {
+      position: relative;
+      z-index: 0;
+    }
+    #thread {
+      background-color: #fafafa;
+      padding: 16px;
+      border-bottom: 1px solid #e0e0e0;
+      will-change: transform, opacity;
+    }
+    #lastline,
+    #actionicons,
+    time {
+      color: #9e9e9e;
+    }
+    .messagecount {
+      color: #9e9e9e;
+      margin-left: 5px;
+    }
+    header {
+      margin-left: 16px;
+      font-size: 14px;
+    }
+    header[unread] .name,
+    header[unread] .subject,
+    header[unread] time {
+      font-weight: 500;
+    }
+    header[unread] time {
+      color: var(--paper-light-blue-500);
+    }
+    header span.name {
+      font-size: 18px;
+    }
+    header span.subject {
+      margin: 6px 0;
+    }
+    header span.snippet,
+    header span.subject,
+    header span.name {
+      text-overflow: ellipsis;
+      overflow: hidden;
+      white-space: nowrap;
+      max-width: 90%;
+    }
+    header span.name {
+      max-width: 80%;
+    }
+    time {
+      font-size: 12px;
+      font-weight: 400;
+      letter-spacing: 1px;
+    }
+    #star {
+      cursor: pointer;
+    }
+    iron-icon[starred] {
+      color: var(--paper-yellow-700);
+    }
+    .undo {
+      @apply(--gmail-undo-action);
+      cursor: pointer;
+      font-weight: 500;
+    }
+    #archived {
+      color: white;
+      z-index: -1;
+      opacity: 0;
+      will-change: opacity;
+    }
+    #archived > * {
+      padding: 16px;
+    }
+    .labels label {
+      font-size: 10px;
+      background-color: #bdbdbd;
+      padding: 3px 5px;
+      color: #fff;
+      border-radius: 2px;
+      margin-right: 5px;
+    }
+    .offscreen {
+      @apply(--swipeable-transition);
+    }
+    .offscreen.right {
+      @apply(--swipeable-pos-right);
+    }
+    .fade {
+      @apply(--swipeable-fade);
+    }
+    .swiping {
+      @apply(--swipeable-swiping);
+    }
+    .snapback {
+      @apply(--swipeable-snapback);
+    }
+    label.pink {
+      @apply(--label-pink);
+    }
+    label.orange {
+      @apply(--label-orange);
+    }
+    label.green {
+      @apply(--label-green);
+    }
+    label.blue {
+      @apply(--label-blue);
+    }
+    label.yellow {
+      @apply(--label-yellow);
+    }
+    label.teal {
+      @apply(--label-teal);
+    }
+    label.purple {
+      @apply(--label-purple);
+    }
+  </style>
+  <template>
+    <div id="container">
+      <div id="thread" class="layout horizontal">
+        <profile-img id="profileimage"
+                     src="[[profileSrc]]"
+                     letter="[[thread.from.name.0]]"
+                     selected="[[selected]]" on-tap="_onSelectThread"
+                     on-transitionend="_eatEvent"></profile-img>
+        <div class="flex layout horizontal">
+          <header class="layout vertical flex" unread$="{{thread.unread}}"
+                  on-down="_onDown" on-up="_onUp">
+            <span class="layout horizontal center justified">
+              <span class="name">
+                <span>{{thread.from.name}}</span>
+                <span class="messagecount" hidden="{{!showMessageCount}}">{{messages.length}}</span>
+              </span>
+              <time>{{thread.date}}</time>
+            </span>
+            <span class="subject">{{thread.subject}}</span>
+            <span id="lastline" class="layout horizontal center justified">
+              <span class="snippet flex">[[_decodeHTMLEntities(thread.snippet)]]</span>
+              <span class="labels">
+                <template is="dom-repeat" items="[[thread.labelIds]]" as="id">
+                  <label hidden="{{_hideThreadLabel(id)}}"
+                         class$="[[_objectItem('labels', id, 'color')]]">[[_objectItem('labels', id, 'name')]]</label>
+                </template>
+              </span>
+              <iron-icon id="star" icon="[[starredIcon]]"
+                         on-tap="_onHighlightStar" starred$="{{threadIsStarred}}"></iron-icon>
+            </span>
+          </header>
+          <div id="actionicons" on-transitionend="_eatEvent" on-down="_onMailAction" class="self-start">
+            <paper-icon-button icon="reply"></paper-icon-button>
+            <paper-icon-button icon="reply-all"></paper-icon-button>
+            <paper-icon-button icon="forward"></paper-icon-button>
+            <paper-icon-button icon="more-vert"></paper-icon-button>
+          </div>
+        </div>
+      </div>
+      <div id="archived" class="layout horizontal center justified fit" aria-hidden="true">
+        <span>Archived</span>
+        <span class="undo layout horizontal center self-stretch" on-tap="_onUndo">UNDO</span>
+      </div>
+    </div>
+  </template>
+  <script>
+  Polymer({
+    is: 'mail-thread',
+
+    behaviors: [
+      SwipeableBehavior
+      // Polymer.IronMenuBehavior
+    ],
+
+    _HOLD_DELAY: 400, // wait delay (ms) to fire hold event.
+
+    _didUp: false, // True if the user relased the thread (up event was fired).
+
+    properties: {
+      /**
+       * The list of messages the thread contains.
+       */
+      messages: {
+        type: Array,
+        value: function() { return []; },
+        observer: '_messagesChanged'
+      },
+
+      /**
+       * List of the user's labels. Keys are the label id.
+       */
+      labels: {
+        type: Object,
+        value: function() { return {}; }
+      },
+
+      /**
+       * The user profiles.
+       */
+      users: {
+        type: Array,
+        value: function() { return []; }
+      },
+
+      /**
+       * Signifies on a mobile devices. Used to render a more condensed UI.
+       */
+      narrow: {
+        type: Boolean,
+        value: false,
+        reflectToAttribute: true
+      },
+
+      /**
+       * True if the thread has been selected by the user.
+       */
+      selected: {
+        type: Boolean,
+        value: false,
+        reflectToAttribute: true
+      },
+
+      /**
+       * True if the thread has been archived.
+       */
+      archived: {
+        type: Boolean,
+        value: false,
+        reflectToAttribute: true,
+        observer: '_archivedChanged'
+      },
+
+      /**
+       * True if the thread should show its undo UI.
+       */
+      undo: {
+        type: Boolean,
+        value: false,
+        reflectToAttribute: true
+      },
+
+      thread: {
+        type: Object,
+        readOnly: true,
+        value: function() { return {}; }
+      },
+
+      starredIcon: {
+        type: String,
+        value: '',
+        computed: '_computeStarredIcon(threadIsStarred)'
+      },
+
+      profileSrc: {
+        type: String,
+        readOnly: true,
+        computed: '_computeProfilePic(users, thread.from.name)'
+      },
+
+      showMessageCount: {
+        type: Number,
+        readOnly: true,
+        value: false
+      },
+
+      threadIsStarred: {
+        type: Boolean,
+        readOnly: true,
+        value: false
+      }
+    },
+
+    // observers: [
+    //   '_updateProfilePic(thread.from.*)'
+    // ],
+
+    created: function() {
+      Polymer.dom(this).classList.add('swipeable-item');
+    },
+
+    ready: function() {
+      // this.async(function() {
+        this.target = this.$.thread;
+      // });
+// this.setScrollDirection('y');
+
+    },
+
+    _objectItem: function(prop, id, path) {
+      return this.get([prop, id, path]) || '';
+    },
+
+    _computeProfilePic: function(users, name) {
+      if (!this.users) {
+        return null;
+      }
+      // var src = this.users && this.users[name] ? this.users[name] : '/images/user.png';
+      var src = this.users[name];
+      return src;
+    },
+
+    _messagesChanged: function() {
+      // TODO(ericbidelman): this is only the last thread. Support all messages in thread.
+      this._setThread(this.messages[0]);
+      if (this.messages.length >= 2) {
+        this._setShowMessageCount(true);
+      }
+
+      // Show starred thread if any messages are starred.
+      if (this.messages.filter(function(m) { return m.starred; }).length) {
+        this._setThreadIsStarred(true);
+      }
+    },
+
+    _decodeHTMLEntities: function(val) {
+      var t = document.createElement('textarea');
+      t.innerHTML = val;
+      return t.textContent;
+    },
+
+    _hideThreadLabel: function(id) {
+      if (!this.labels) {
+        return true;
+      }
+      var label = this.labels[id];
+      return !label || label.type !== 'user';
+    },
+
+    _computeStarredIcon: function(starred) {
+      return 'icons:star' + (starred ? '' : '-border');
+    },
+
+    _onHighlightStar: function(e) {
+      e.stopPropagation();
+      this.thread.starred = !this.thread.starred;
+      this._setThreadIsStarred(this.thread.starred);
+    },
+
+    _onMailAction: function(e) {
+      e.stopPropagation();
+      console.warn('Not implemented');
+    },
+
+    _onUndo: function() {
+      this.swipe(false);
+    },
+
+    _onUp: function(e) {
+      this._didUp = true;
+    },
+
+    _onDown: function(e) {
+      this._didUp = false;
+      // e.detail.prevent('tap');
+      // e.detail.prevent('track');
+
+      this.async(function() {
+        // Select thread if it isn't being swiped off or the user lifted their
+        // finger before the "hold" event.
+        if (!this._didUp && !this.target.classList.contains(this.swipingClass)) {
+          this.$.profileimage.fire('tap'); // select thread.
+        }
+      }, this._HOLD_DELAY);
+    },
+
+    _onSelectThread: function(e) {
+      if (Polymer.dom(e).localTarget === this.$.profileimage) {
+        e.stopPropagation();
+        this.selected = !this.selected;
+        this.fire('thread-select', {thread: this});
+      }
+    },
+
+    _eatEvent: function(e) {
+      e.stopPropagation();
+    },
+
+    // swipeable-item uses this observer if defined.
+    _swipeOffChanged: function() {
+      // Show in-place UNDO for a swipe. Don't show it for multi-select archive.
+      this.undo = this.swipeOff;
+      this.archived = this.swipeOff;
+    },
+
+    _archivedChanged: function() {
+      if (!this.isAttached) {
+        return;
+      }
+
+      if (this.archived) {
+
+        // De-select thread.
+        if (this.selected) {
+          this.selected = false;
+          this.$.profileimage.fire('tap'); // tell core-selector.
+        }
+
+        // TODO: don't do this here. Should be handled by swipeable-item
+        Polymer.dom(this.target).classList.add('offscreen', 'right');
+        this.fire('thread-archive', {thread: this, showUndo: this.undo});
+
+        if (!this.undo) {
+          this.async(function() {
+            this.toggleClass('shrink', true);
+          });
+        }
+      } else {
+        Polymer.dom(this.target).classList.remove('offscreen', 'right');
+        this.toggleClass('shrink', false);
+
+        this.fire('thread-archive', {thread: this, showUndo: this.undo});
+      }
+    }
+  });
+</script>
+</dom-module>

@@ -1,0 +1,275 @@
+<!-- <link rel="import" href="../bower_components/polymer/polymer.html"> -->
+<!-- <link rel="import" href="../bower_components/paper-style/paper-style.html"> -->
+
+<!-- Styles in an import are added to the main document -->
+<style is="custom-style">
+/* Global custom props */
+/* Users of this behavior need to add the swipeable-item class to their element
+   to gain swipable features */
+.swipeable-item {
+  --swipeable-transition: {
+    transition: all 200ms ease-in-out;
+  };
+
+  --swipeable-pos-right: {
+    -webkit-transform: translate3d(100%, 0, 0);
+    transform: translate3d(100%, 0, 0);
+  };
+
+  --swipeable-fade: {
+    opacity: 0 !important;
+  };
+
+  --swipeable-swiping: {
+    -webkit-user-select: none;
+    -moz-user-select: none;
+    -ms-user-select: none;
+    user-select: none;
+  };
+
+  --swipeable-snapback: {
+    transition: all 200ms ease-in-out;
+    -webkit-transform: none !important;
+    transform: none !important;
+    opacity: 1 !important;
+  };
+}
+</style>
+
+<!--
+Adds horizontal swiping functionality to an element.
+
+##### Example
+
+    <template is="dom-bind">
+      <swipeable-item target="{{$.card}}"></swipeable-item>
+      <div id="card">Swipe me!</div>
+    </template>
+
+The `target` is the target node to add swiping behavior to.
+
+By default, when the element is being dragged the `swiping` class is applied. You can configure this class by changing the `swipingClass` property. When the element has been fully
+swiped outside of it's container, the `offscreen` class is applied.
+
+When extending `<swipeable-item>`, it's useful to define a `_swipeOffChanged()` to do your own work when the element has been swiped away:
+
+    _swipeOffChanged: function() {
+      if (this.swipeOff) {
+        // Element was swiped away.
+      }
+    }
+
+Alternatively, you can listen for the `swipe-away` event.
+
+@element swipeable-item
+-->
+
+<!--
+  TODO(ericbidelman): use core-transition instead for snapback
+-->
+
+<script>
+
+var _allowSwipe = false;
+
+/** @polymerBehavior */
+SwipeableBehavior = {
+
+  properties: {
+
+    SWIPE_OFF_THREASHOLD: {
+      type: Number,
+      value: 10,
+      readOnly: true
+    },
+
+    Y_MAX_FOR_SCROLL: {
+      type: Number,
+      value: 5,
+      readOnly: true
+    },
+
+    /**
+     * If `true`, the item does not snap back into place if has not been
+     * dragged far enough.
+     */
+    noSnapBack: {
+      type: Boolean,
+      value: false
+    },
+
+    /**
+     * If `true`, the item does not fade as it is swiped.
+     */
+    noDissolve: {
+      type: Boolean,
+      value: false
+    },
+
+    /**
+     * The target node for track events. If none is provided, the parentElement
+     * of this element is used as the target.
+     *
+     * @attribute target
+     * @type DOMElement
+     * @default null
+     */
+    target: {
+      value: null,
+      observer: '_targetChanged'
+    },
+
+    /**
+     * The class to apply to the element when it is being dragged.
+     */
+    swipingClass: {
+      type: String,
+      value: 'swiping'
+    },
+
+    /**
+     * True when the element has been swiped all the way offscreen.
+     */
+    swipeOff: {
+      type: Boolean,
+      value: false,
+      observer: '_swipeOffChanged'
+    }
+  },
+
+  /**
+   * Fired when the item is swiped off screen.
+   *
+   * @event swipe-away
+   * @param {Object} detail
+   * @param {Object} detail.direction The direction the item was swiped. -1: left, 1: right
+   */
+
+  listeners: {
+    track: '_onTrack',
+    // down: '_onDown',
+    transitionend: 'snapBack'
+  },
+
+  ready: function() {
+    this.setScrollDirection('y', this);
+  },
+
+  attached: function() {
+    this.width = this.target.offsetWidth; // cache it.
+  },
+
+  _targetChanged: function() {
+    this.target = this.target || this.parentElement;
+  },
+
+  _onTrackStart: function(e) {
+    _allowSwipe = false;
+    // Prevent the item from being swiped if user is not strictly swiping
+    // horizontally. Don't want to mistake fling scrolling for a swipe off.
+    if (Math.abs(e.detail.dy) <= this.Y_MAX_FOR_SCROLL) {
+      _allowSwipe = true;
+      Polymer.dom(this.target).classList.add(this.swipingClass);
+    }
+  },
+
+  _onTrack: function(e) {
+    switch(e.detail.state) {
+      case 'start':
+        this._onTrackStart(e);
+        break;
+      case 'track':
+        if (!_allowSwipe) {
+          return;
+        }
+
+        this._last_ddx = e.detail.ddx;
+
+        Polymer.Base.transform('translate3d(' + e.detail.dx + 'px, 0, 0)', this.target);
+
+        if (!this.noDissolve) {
+          this.target.style.opacity = 1 - (Math.abs(e.detail.dx) / this.width);
+        }
+        break;
+      case 'end':
+        if (!_allowSwipe) {
+          return;
+        }
+        this._onTrackEnd(e);
+        break;
+    }
+  },
+
+  _onTrackEnd: function(e) {
+    Polymer.dom(this.target).classList.remove(this.swipingClass);
+
+    var info = {dx: e.detail.dx, ddx: this._last_ddx, direction: e.detail.dx > 0 ? 1 : -1};
+
+    // Swipe the item offscreen if it was fast.
+    if (Math.abs(this._last_ddx) > this.SWIPE_OFF_THREASHOLD) {
+      this.swipe(true, info);
+
+      // TODO: 100ms out animation seems good but may want to use swipe
+      // acceleration (this.last_ddx_) instead.
+      this.target.style.transition = 'all 100ms linear';
+      return;
+    }
+
+    // Slide all the way off (left/right) if we're 50% total width.
+    if (Math.abs(e.detail.dx) >= this.width / 2) {
+      this.swipe(true, info);
+    } else if (!this.noSnapBack) {
+      Polymer.dom(this.target).classList.add('snapback');
+    }
+  },
+
+  snapBack: function(e) {
+    e.stopPropagation(); // Prevent transitionend event from bubbling up further.
+
+    // If item is already swiped offscreen, don't snap it back.
+    // TODO: use Polymer.dom().classList.contains when ready. github.com/Polymer/polymer/issues/1907
+    if (this.target.classList.contains('offscreen')) {
+      return;
+    }
+
+    if (e.propertyName.indexOf('transform') != -1) {
+      Polymer.Base.transform('', this.target);
+      this.target.style.opacity = '';
+      Polymer.dom(this.target).classList.remove('snapback');
+    }
+  },
+
+  swipe: function(goAway, obj) {
+    var style = this.target.style;
+    var target = Polymer.dom(this.target);
+
+    this.swipeOff = goAway;
+
+    if (goAway) {
+      target.classList.add('offscreen');
+      if (!this.noDissolve) {
+        target.classList.add('fade');
+      }
+
+      Polymer.Base.transform(
+          'translate3d(' + (obj.direction * this.width) + 'px, 0, 0)', this.target);
+
+
+      this.fire('swipe-away', {direction: obj.direction});
+
+    } else {
+      style.transition = '';
+      Polymer.Base.transform('translate3d(' + this.width + 'px, 0, 0)', this.target);
+      target.classList.remove('offscreen', 'fade');
+
+      // Native app always comes back from right. Need to wait one rAF for
+      // .offscreen to have been applied.
+      this.async(function() {
+        target.classList.add('snapback');
+      });
+    }
+  }
+
+};
+</script>
+

@@ -1,0 +1,112 @@
+<link rel="import" href="pa-todo-item.html">
+
+<dom-module id="pa-todo">
+  <template>
+    <style include="shared-styles"></style>
+    <style>
+      .todo-list {
+        height: 252px;
+        overflow-y: auto;
+        margin-left: -14px;
+      }
+
+      :host > div {
+        display: none;
+      }
+
+      :host > div[show] {
+        display: block;
+      }
+
+      .sign-in-msg {
+        font-size: 14px;
+      }
+
+      .sign-in-msg iron-icon {
+        --iron-icon-height: 16px;
+        --iron-icon-width: 16px;
+        color: var(--paper-amber-900);
+        margin-right: 7px;
+        margin-bottom: 3px;
+      }
+    </style>
+
+    <div class="sign-in-msg" show$="{{!user}}">
+      <p><iron-icon icon="info-outline"></iron-icon>This app is using Firebase to store data. Please, sign in with your Google account to use ToDo list.</p>
+      <paper-button raised class="colorful" on-click="signInClick">Sign in</paper-button>
+    </div>
+    <div class="todo-block" show$="{{user}}">
+      <paper-input placeholder="Add a to-do" no-label-float id="todoInput"></paper-input>
+
+      <div class="todo-list" on-pa-destroy-item="destroyItemAction">
+        <template is="dom-repeat" items="{{todos}}" observe="completed">
+          <pa-todo-item item="{{item}}"></pa-todo-item>
+        </template>
+      </div>
+    </div>
+
+  </template>
+
+  <script>
+    (function() {
+      'use strict';
+
+      var ENTER_KEY = 13;
+
+      Polymer({
+        is: 'pa-todo',
+
+        properties: {
+          modelId: String,
+          todos: {
+            type: Array,
+            observer: '_todosChanged'
+          },
+          model: {
+            type: Object
+          }
+        },
+
+        listeners: {
+          'keypress': 'keypressAction'
+        },
+
+        _todosChanged: function(){
+          this.todos.reverse();
+        },
+
+        keypressAction: function(e) {
+          if (e.keyCode === ENTER_KEY) {
+            var input = document.getElementById('todoInput').$.input;
+            this.newItem(input.value);
+            input.value = '';
+          }
+        },
+
+        destroyItemAction: function(e, detail) {
+          var i = this.todos.indexOf(detail);
+          if (i !== -1) {
+            this.splice('todos', i, 1);
+          }
+        },
+
+        newItem: function(title) {
+          title = String(title).trim();
+
+          if (!title) {
+            return;
+          }
+
+          this.unshift('todos', {
+            title: title,
+            completed: false
+          });
+        },
+
+        signInClick: function() {
+          this.fire('sign-in');
+        }
+      });
+    })();
+  </script>
+</dom-module>

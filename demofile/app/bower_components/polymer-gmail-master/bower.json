@@ -1,0 +1,29 @@
+{
+  "name": "PolymerMail",
+  "version": "0.1.16",
+  "authors": [
+    "Eric Bidelman <ebidel@gmail.com>"
+  ],
+  "description": "Polymer version of Gmail app",
+  "main": "index.html",
+  "keywords": [
+    "webcomponents",
+    "web components",
+    "polymer",
+    "webview"
+  ],
+  "license": "http://polymer.github.io/LICENSE.txt",
+  "ignore": [
+    "**/.*",
+    "node_modules",
+    "bower_components",
+    "test",
+    "tests"
+  ],
+  "dependencies": {
+    "iron-elements": "PolymerElements/iron-elements#^1.0.0",
+    "paper-elements": "PolymerElements/paper-elements#^1.0.0",
+    "google-signin": "GoogleWebComponents/google-signin#^1.0.1",
+    "platinum-sw": "PolymerElements/platinum-sw#^1.0.1"
+  }
+}

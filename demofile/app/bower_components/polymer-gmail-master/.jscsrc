@@ -1,0 +1,8 @@
+{
+  "preset": "google",
+  "validateIndentation": 2,
+  "excludeFiles": ["node_modules/**", "dist/**", "scripts/bundle.js"],
+  "esnext": true,
+  "disallowParenthesesAroundArrowParam": true,
+  "requireArrowFunctions": true
+}

@@ -1,0 +1,82 @@
+<style is="custom-style">
+  /* Application theme */
+  :root {
+    --dark-primary-color: #303F9F;
+    --default-primary-color: #3F51B5;
+    --text-primary-color: #ffffff;
+    --accent-color: #FF4081;
+    --primary-text-color: #212121;
+    --secondary-text-color: #727272;
+    --disabled-text-color: #bdbdbd;
+    --divider-color: #B6B6B6;
+    --default-text-color: #444444;
+    --default-icon-color: #7f7f7f;
+    --default-icon-selected: #97A1D7;
+
+    /* Components */
+
+    /* paper-drawer-panel */
+    --drawer-menu-color: #ffffff;
+    --drawer-border-color: 1px solid #ccc;
+    --drawer-toolbar-border-color: 1px solid rgba(0, 0, 0, 0.22);
+    --drawer-submenu-background: #efefef;
+
+    /* paper-menu */
+    --paper-menu-background-color: #fff;
+    --menu-link-color: #111111;
+  }
+
+  /* General styles */
+
+  paper-toolbar h1 {
+    font-size: 32px;
+    white-space: nowrap;
+  }
+
+  @media (max-width: 500px) {
+    paper-toolbar h1 {
+      font-size: 26px;
+    }
+  }
+
+  .top-toolbar {
+    box-shadow: 0 2px 5px rgba(0,0,0,0.26);
+  }
+
+  paper-scroll-header-panel {
+    height: 100%;
+    box-shadow: 0 1px 2px 0 rgba(0, 0, 0, 0.12);
+  }
+
+  .toggle-drawer {
+    margin-left: 16px;
+  }
+
+  .refresh-icon {
+    margin-right: 8px;
+  }
+
+  @media (min-width: 640px) {
+    .collapsed-menu::shadow #main {
+      left: 62px !important;
+    }
+
+    .collapsed-menu::shadow #drawer {
+      width: 62px !important;
+      -webkit-transform: translateX(0);
+      transform: translateX(0);
+    }
+  }
+
+  h1 a {
+    color: var(--text-primary-color);
+    text-decoration: none;
+  }
+
+  /* Tablet+ */
+  @media (min-width: 601px) {
+    #drawer.paper-drawer-panel > [drawer] {
+      border-right: 1px solid rgba(0, 0, 0, 0.14);
+    }
+  }
+</style>

@@ -1,0 +1,27 @@
+<dom-module id="pa-geo-chart">
+  <template>
+    <style include="shared-styles"></style>
+
+    <google-chart
+        type='geo'
+        data='[ ["Country", "Popularity"],
+                   ["India", 900],
+                   ["United States", 300],
+                   ["Brazil", 400],
+                   ["Canada", 500],
+                   ["Pakistan", 200],
+                   ["Bangladesh", 500] ]'>
+    </google-chart>
+  </template>
+
+  <script>
+    (function() {
+      'use strict';
+
+      Polymer({
+        is: 'pa-geo-chart'
+      });
+    })();
+  </script>
+
+</dom-module>

@@ -1,0 +1,87 @@
+<link rel="import" href="../bower_components/paper-styles/paper-styles.html">
+
+<style is="custom-style">
+/* Global custom props */
+:root {
+  --header-red-color: var(--paper-red-600);
+
+  --gmail-toast-action: {
+    color: #ffa726;
+    text-transform: uppercase;
+    cursor: pointer;
+    font-weight: 400;
+  };
+}
+
+paper-scroll-header-panel {
+  --paper-scroll-header-panel-full-header: {
+    background: url(images/gmail.png) no-repeat 115% 56px;
+    background-size: 200px;
+    background-color: var(--header-red-color) !important;
+  };
+  --paper-scroll-header-panel-condensed-header: {
+    background-color: var(--header-red-color);
+    opacity: 1 !important; /* Prevents the background color from dissolving. */
+  };
+}
+
+/* github.com/PolymerElements/paper-scroll-header-panel/issues/17 */
+#mainheader::shadow .title {
+  isolation: isolate; /* force main header title to its own layer */
+}
+
+.toast .action {
+  @apply(--gmail-toast-action);
+  margin-left: 16px;
+}
+
+#fab {
+  background: var(--paper-red-700);
+}
+
+.pink iron-icon {
+  color: var(--paper-pink-500);
+}
+.orange iron-icon {
+  color: var(--paper-orange-500);
+}
+.green iron-icon {
+  color: var(--paper-green-500);
+}
+.blue iron-icon {
+  color: var(--paper-blue-500);
+}
+.yellow iron-icon {
+  color: var(--paper-yellow-a700);
+}
+.teal iron-icon {
+  color: var(--paper-teal-500);
+}
+.purple iron-icon {
+  color: var(--paper-purple-500);
+}
+
+mail-thread {
+  --label-pink: {
+    background-color: var(--paper-pink-500) !important;
+  };
+  --label-orange: {
+    background-color: var(--paper-orange-500) !important;
+  };
+  --label-green: {
+    background-color: var(--paper-green-500) !important;
+  };
+  --label-blue: {
+    background-color: var(--paper-blue-500) !important;
+  };
+  --label-yellow: {
+    background-color: var(--paper-yellow-a700) !important;
+  };
+  --label-teal: {
+    background-color: var(--paper-teal-500) !important;
+  };
+  --label-purple: {
+    background-color: var(--paper-purple-500) !important;
+  };
+}
+</style>

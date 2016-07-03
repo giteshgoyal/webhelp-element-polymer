@@ -1,0 +1,29 @@
+<dom-module id="pa-inputs-validation">
+  <template>
+    <style include="shared-styles"></style>
+
+    <div class="vertical-section">
+      <paper-input label="input validates on blur (required, auto-validate)" required auto-validate error-message="needs some text!"></paper-input>
+
+      <paper-input label="only type letters (auto-validate)" auto-validate pattern="[a-zA-Z]*" error-message="letters only!"></paper-input>
+
+      <paper-input id="inputForValidation" required label="only type letters (no auto validate)" pattern="[a-zA-Z]*" error-message="letters only, required input!"></paper-input>
+
+      <paper-input label="at most 10 letters" char-counter auto-validate pattern="[a-zA-Z]*" maxlength="10" error-message="letters only!"></paper-input>
+      <br>
+
+      <paper-button tabindex="0" class="green ripple" raised onclick="validate()">Validate</paper-button>
+    </div>
+  </template>
+
+  <script>
+    (function() {
+      'use strict';
+
+      Polymer({
+        is: 'pa-inputs-validation'
+      });
+    })();
+  </script>
+
+</dom-module>
