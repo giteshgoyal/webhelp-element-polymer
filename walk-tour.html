@@ -1,446 +1,440 @@
-	<link rel="import" href="../polymer/polymer.html">
-	<link rel="import" href="../iron-icon/iron-icon.html">
-	<link rel="import" href="walk-tour-icons.html">
-	<link rel="import" href="../paper-icon-button/paper-icon-button.html">
-	<link rel="import" href="../iron-signals/iron-signals.html">
-	<link rel="import" href="../app-storage/app-localstorage/app-localstorage-document.html">
-	<link rel="import" href="../iron-a11y-keys/iron-a11y-keys.html">
-	<dom-module id="walk-tour">
-	<template>
+<link rel="import" href="../polymer/polymer.html">
+<link rel="import" href="../iron-icon/iron-icon.html">
+<link rel="import" href="walk-tour-icons.html">
+<link rel="import" href="../paper-icon-button/paper-icon-button.html">
+<link rel="import" href="../iron-signals/iron-signals.html">
+<link rel="import" href="../app-storage/app-localstorage/app-localstorage-document.html">
+<link rel="import" href="../iron-a11y-keys/iron-a11y-keys.html">
 
+<!--
+`walk-tour`
+Presents a web application by showing contextual dialogs and
+highlighting elements on the page.
 
+This element shows a guided tour through a web application. The
+different steps of the tour can be easily configured.
 
-		<!--/**************************************************Custom Styling*******************************************-->
+Tour can be controlled using keyboard events as well mouse click events
 
-		<style>
-		
-			.myTooltip{
-				position:fixed;
-				top:50px;
-				left:50px;
+Right key for next
+Left key  for Previous
+Esc key for Skip
+
+@demo demo/index.html
+-->
+
+<dom-module id="walk-tour">
+    <template>
+
+        <!--/**************************************************Custom Styling*******************************************-->
+
+        <style>
+			.myTooltip {
+				position: fixed;
+				top: 50px;
+				left: 50px;
 				height: auto;
-				max-width:600px;
-				min-width:100px;
+				max-width: 600px;
+				min-width: 100px;
 				color: #FFFFFF;
-				transition:all 0.5s ease;
+				transition: all 0.5s ease;
 				transition: all 0.5s ease-in-out;
 				border-color: grey;
-				pointer-events:auto;
+				pointer-events: auto;
 			}
-			#overlay_back{
+			#overlay_back {
 				position: fixed;
 				z-index: 90000;
 				left: 0;
 				top: 0;
 				width: 100%;
-				height: 100%; 
+				height: 100%;
 				overflow: auto; /* Enable scroll if needed */
-
 				background-color: rgba(0,0,0,0); /* Black w/ opacity */
 				visibility: hidden;
 			}
-			
-			#overlay{
+
+			#overlay {
 				position: fixed;
 				z-index: 99999;
 				left: -295px;
 				top: -100px;
 				width: 0px;
 				height: 0px;
-				border-radius: 4px; 
+				border-radius: 4px;
 				overflow: auto; /* Enable scroll if needed */
 				background: rgba(0,0,0,0);
-
 				box-shadow: 0px 0px 40px 100px rgba(0,0,0,0) inset, 0px 0px 0px 10000px rgba(0,0,0,0.9);
-
-
 				transition: all 0.5s ease-in-out;
 				visibility: hidden;
 			}
-			
+
 			.info {
 				opacity: 0.70;
 			}
-			
 
 			#next {
 
-				float:right;
+				float: right;
 				margin-right: 10px;
 				margin-bottom: 15px;
-				background-color:#424242;
-				border-radius: 50%; 
-			}	
-			#next:hover{
-				background-color:#757575;
+				background-color: #424242;
+				border-radius: 50%;
+			}
+			#next:hover {
+				background-color: #757575;
 			}
 			#previous {
-				float:left;
+				float: left;
 				margin-left: 70px;
 				margin-bottom: 15px;
 				border-radius: 50%;
 			}
-			#previous:hover{
-				background-color:#757575;
+			#previous:hover {
+				background-color: #757575;
 			}
-			#title{
+			#title {
 				border-radius: 5px;
 				font-size: 20px;
-				margin-top:12px;
-				width:100%;
-				padding-bottom:15px;
-				height:auto;
-			}	
-			
-			#msg{
+				margin-top: 12px;
+				width: 100%;
+				padding-bottom: 15px;
+				height: auto;
+			}
+
+			#msg {
 				text-align: justify;
 				font-size: 16px;
 				padding: 10px 15px 10px 15px;
 			}
-			
-			#title-icon{
+
+			#title-icon {
 				display: block;
-				overflow:auto;
+				overflow: auto;
 			}
-			
-			#icc{
-				float:left;
-				margin-left:10px;
-				margin-right:10px;
-				margin-top:10px;
+
+			#icc {
+				float: left;
+				margin-left: 10px;
+				margin-right: 10px;
+				margin-top: 10px;
 			}
 			#footer {
 				display: inline;
 			}
 			#pg_no {
-				float:left;
-				margin-left: 15px ;
-				margin-top:10px;
-				color:#f44336;
-				opacity:0.7;
-				font-size:13px;
-
+				float: left;
+				margin-left: 15px;
+				margin-top: 10px;
+				color: #f44336;
+				opacity: 0.7;
+				font-size: 13px;
 			}
-			#cross{
-				color:#e57373;;
-				float:right;
-				margin-top:3px;
-				margin-right:3px;
+			#cross {
+				color: #e57373;;
+				float: right;
+				margin-top: 3px;
+				margin-right: 3px;
 			}
 			#skip {
 
-				float:left;
-				width:98px;
+				float: left;
+				width: 98px;
 			}
 
-		</style>
+        </style>
 
-		<!--/************************************************  Custom Styling Ends  *******************************************-->
+        <!--/************************************************  Custom Styling Ends  *******************************************-->
 
+        <div id="overlay_back" on-tap="_nextAction"></div>
+        <div id="overlay">
+            <div id="tooltip" class="myTooltip">
+                <div id="title-icon">
 
+                    <paper-icon-button noink icon="walk-tour-icons:clear" id="cross" on-tap="_crossAction"></paper-icon-button>
+                    <iron-icon icon="walk-tour-icons:help-outline" id="icc"></iron-icon>
 
-		<div id="overlay_back" on-tap="_nextAction"></div>
-		<div id="overlay">
-			<div id="tooltip" class="myTooltip">
-			<div id="title-icon">
+                    <div id="title"></div>
 
-				<paper-icon-button noink icon="walk-tour-icons:clear" id="cross" on-tap="_crossAction"></paper-icon-button>
-				<iron-icon icon="walk-tour-icons:help-outline" id="icc"></iron-icon>
+                </div>
 
-				<div id="title"></div>
+                <div class="info" id="msg">
 
-			</div>
+                </div>
 
-			<div class="info" id="msg">
+                <div id="footer">
 
-			</div>
+                    <div id="pg_no"></div>
 
-			<div id="footer">
+                    <paper-icon-button noink icon="walk-tour-icons:chevron-left" id="previous" on-tap="_prevAction"></paper-icon-button>
 
-				<div id="pg_no"></div>
+                    <paper-icon-button noink icon="walk-tour-icons:chevron-right" id="next" on-tap="_nextAction"></paper-icon-button>
+                    <paper-button noink raised id="skip" on-tap="_crossAction">
+                        Skip Tour
+                    </paper-button>
 
-				<paper-icon-button noink icon="walk-tour-icons:chevron-left" id="previous" on-tap="_prevAction"></paper-icon-button> 
+                </div>
+            </div>
 
-				<paper-icon-button noink icon="walk-tour-icons:chevron-right" id="next" on-tap="_nextAction"></paper-icon-button>				 <paper-button noink raised id="skip" on-tap="_crossAction">Skip Tour</paper-button>	
+        </div>
 
-			</div>	
-		</div>
+        <app-localstorage-document id="storage" key="walk-tour-viewed" data="{{_cookies}}"></app-localstorage-document>
 
-	</div>
+        <iron-a11y-keys target="[[target]]" keys="left right esc" on-keys-pressed="_checkButton"></iron-a11y-keys>
 
-	<app-localstorage-document id="storage" key="walk-tour-viewed" data="{{_cookies}}"></app-localstorage-document>
+        <iron-signals on-iron-signal-tour="_handleEvent"></iron-signals>
 
-	<iron-a11y-keys target="[[target]]" keys="left right esc" on-keys-pressed="_checkButton"></iron-a11y-keys>
+    </template>
+    <!--***************************************************  Script Starts  **************************************** -->
 
-	<iron-signals on-iron-signal-tour="_handleEvent"></iron-signals>
-
-	</template>
-	<!--***************************************************  Script Starts  **************************************** --> 
-
-	<script>
+    <script>
 		Polymer({
 			is : 'walk-tour',
 			/********************************************  Properties Start  ***************************************************/
-			properties: {
-				_walkthrough_steps:{
-					type:Array, value: function(){ return []; }
+			properties : {
+				_walkthrough_steps : {
+					type : Array,
+					value : function() {
+						return [];
+					}
 				},
 
-				_i_value: {
-					type: Number,
-					value: -1
+				_i_value : {
+					type : Number,
+					value : -1
 				},
-				welcomeShow: {
-					type: Boolean,
-					value: true
+				welcomeShow : {
+					type : Boolean,
+					value : true
 				},
-				welcomeTitle: {
-					type: String,
-					value: "Welcome"
+				welcomeTitle : {
+					type : String,
+					value : "Welcome"
 				},
-				welcomeMsg: {
-					type: String,
-					value:"You can go to and fro between elements using mouse as well as keyboard (left, right keys and esc key to exit). Click on screen to move to next."
+				welcomeMsg : {
+					type : String,
+					value : "You can go to and fro between elements using mouse as well as keyboard (left, right keys and esc key to exit). Click on screen to move to next."
 				},
-				_cookies:{
-					type:Object,
-					value: function(){ return {}; }
+				_cookies : {
+					type : Object,
+					value : function() {
+						return {};
+					}
 				},
-				_newData:{
-					type:Array,
-					value:function() {return [];}
+				_newData : {
+					type : Array,
+					value : function() {
+						return [];
+					}
 				},
-				
-				_check: {
-					type:Boolean,
-					value:false
+
+				_check : {
+					type : Boolean,
+					value : false
 				},
-				target: { type: Object, value: function() {return document.body;} },
+				target : {
+					type : Object,
+					value : function() {
+						return document.body;
+					}
+				},
 
 			},
 
 			/********************************************  Properties Ends   ***************************************************/
-			_checkButton:function(e)
-			{
-				switch(e.detail.key)
-				{
+			_checkButton : function(e) {
+				switch(e.detail.key) {
 
-					case "right":
+				case "right":
 					this._nextAction();
 					break;
-					case "left":
+				case "left":
 					this._prevAction();
 					break;
-					default:
+				default:
 					this._crossAction();
 				}
 			},
 
-
-			_handleEvent:function(e)
-			{
-
+			_handleEvent : function(e) {
 
 				this.push('_walkthrough_steps', e.detail);
-				var i=0,j=0;
-				var id = this._walkthrough_steps[this._walkthrough_steps.length-1].id;
+				var i = 0,
+				    j = 0;
+				var id = this._walkthrough_steps[this._walkthrough_steps.length - 1].id;
 
-				if(!(id in this._cookies) || (this._cookies[id]!=this._walkthrough_steps[this._walkthrough_steps.length-1].version ))
-				{
+				if (!( id in this._cookies) || (this._cookies[id] != this._walkthrough_steps[this._walkthrough_steps.length - 1].version )) {
 
-					this.push('_newData',this._walkthrough_steps[this._walkthrough_steps.length-1]);
-					this._cookies[id]=this._walkthrough_steps[this._walkthrough_steps.length-1].version;
+					this.push('_newData', this._walkthrough_steps[this._walkthrough_steps.length - 1]);
+					this._cookies[id] = this._walkthrough_steps[this._walkthrough_steps.length - 1].version;
 					this.$.storage.setStoredValue(id, 1);
 
-					this._check=true;
+					this._check = true;
 				}
 
-				if(this._newData.length==1 && this._check)
-				{
-					this.$.overlay.style.display="initial";
-					this.$.overlay_back.style.display="initial";
-					this._check=false;
+				if (this._newData.length == 1 && this._check) {
+					this.$.overlay.style.display = "initial";
+					this.$.overlay_back.style.display = "initial";
+					this._check = false;
 					this._fetch();
 				}
 
 			},
 
-			_nextAction: function() {
-				if (this._i_value < this._newData.length)
-				{
-					this._i_value = this._i_value+1;
+			_nextAction : function() {
+				if (this._i_value < this._newData.length) {
+					this._i_value = this._i_value + 1;
 					this._renderTooltip();
 				}
 			},
 
-			_prevAction: function() {
-				if (this._i_value > 0)
-				{
-					this._i_value=this._i_value-1;
+			_prevAction : function() {
+				if (this._i_value > 0) {
+					this._i_value = this._i_value - 1;
 					this._renderTooltip();
 				}
 			},
 
-			_crossAction: function() {
-				this.$.overlay.style.display="none";
-				this.$.overlay_back.style.display="none";
-				this._newData=[];
-				this._check=true;
-				this.welcomeShow=false;
-				this._i_value=-1;
-				
+			_crossAction : function() {
+				this.$.overlay.style.display = "none";
+				this.$.overlay_back.style.display = "none";
+				this._newData = [];
+				this._check = true;
+				this.welcomeShow = false;
+				this._i_value = -1;
+
 			},
 
 			/**********************************************  Render tooltip Function  ************************************************/
-			_renderTooltip: function() {
+			_renderTooltip : function() {
 
 				/******************************************* Initialization of variables  **********************************/
-				var prev_button=this.$.previous;
-				var next_button=this.$.next;
-				var msg,i=0;
-				var newData=this._newData;
-				var tooltip_width=this.$.tooltip.offsetWidth;
+				var prev_button = this.$.previous;
+				var next_button = this.$.next;
+				var msg,
+				    i = 0;
+				var newData = this._newData;
+				var tooltip_width = this.$.tooltip.offsetWidth;
 				var tooltip_height;
 				var pos_x;
 				var pos_y;
 				var w = window,
-				d = document,
-				e = d.documentElement,
-				g = d.getElementsByTagName('body')[0],
-				width = w.innerWidth || e.clientWidth || g.clientWidth,
-				height = w.innerHeight|| e.clientHeight|| g.clientHeight;
+				    d =
+				    document,
+				    e = d.documentElement,
+				    g = d.getElementsByTagName('body')[0],
+				    width = w.innerWidth || e.clientWidth || g.clientWidth,
+				    height = w.innerHeight || e.clientHeight || g.clientHeight;
 
 				/****************************************************** Initialization of variables Ends******************************/
 
-				prev_button.style.display="inherit";
-				this.$.pg_no.style.display="inline";
-				this.$.skip.style.display="none";
+				prev_button.style.display = "inherit";
+				this.$.pg_no.style.display = "inline";
+				this.$.skip.style.display = "none";
 
-				if(this._i_value<newData.length)	/* && this._i_value>=0 */
+				if (this._i_value < newData.length)/* && this._i_value>=0 */
 				{
-					if(this._i_value==0)
-						prev_button.style.display="none";
+					if (this._i_value == 0)
+						prev_button.style.display = "none";
 					pos_x = newData[this._i_value].x;
 					pos_y = newData[this._i_value].y;
 
-									//next_button.innerHTML = 'Next<iron-icon icon="walk-tour-icons:chevron-right"></iron-icon>';
-	                                //prev_button.innerHTML = '<iron-icon icon="walk-tour-icons:chevron-left"></iron-icon>Prev';
+					//next_button.innerHTML = 'Next<iron-icon icon="walk-tour-icons:chevron-right"></iron-icon>';
+					//prev_button.innerHTML = '<iron-icon icon="walk-tour-icons:chevron-left"></iron-icon>Prev';
 
+					this.$.overlay.style.left = newData[this._i_value].el_left - 10 + 'px';
+					this.$.overlay.style.top = newData[this._i_value].el_top - 10 + 'px';
+					this.$.overlay.style.width = newData[this._i_value].el_width + 20 + 'px';
+					this.$.overlay.style.height = newData[this._i_value].el_height + 20 + 'px';
 
-	                                this.$.overlay.style.left = newData[this._i_value].el_left-10+'px';
-	                                this.$.overlay.style.top = newData[this._i_value].el_top-10+'px';	
-	                                this.$.overlay.style.width = newData[this._i_value].el_width+20+'px';	
-	                                this.$.overlay.style.height = newData[this._i_value].el_height+20+'px';	
-	                                
-	                                this.$.title.innerHTML = newData[this._i_value].title;
-	                                this.$.pg_no.innerHTML=(this._i_value+1)+" of "+newData.length;
+					this.$.title.innerHTML = newData[this._i_value].title;
+					this.$.pg_no.innerHTML = (this._i_value + 1) + " of " + newData.length;
 
+					tooltip_height = this.$.tooltip.offsetHeight;
 
-	                                tooltip_height=this.$.tooltip.offsetHeight;
+					if ( typeof (newData[this._i_value].message) == 'string')
+						msg = newData[this._i_value].message;
+					else {
+						msg = newData[this._i_value].message[0] + '<ul>';
 
-	                                if(typeof (newData[this._i_value].message) == 'string')
-	                                	msg=newData[this._i_value].message;
-	                                else
-	                                {
-	                                	msg=newData[this._i_value].message[0]+'<ul>';
+						for ( i = 1; i < newData[this._i_value].message.length; i++)
+							msg += '<li>' + newData[this._i_value].message[i] + '</li>';
 
-	                                	for(i=1;i<newData[this._i_value].message.length;i++)
-	                                		msg+='<li>'+newData[this._i_value].message[i]+'</li>';
+						msg += '</ul>';
+					}
+					this.$.msg.innerHTML = msg;
+					/*************************************************Width Checking****************************************/
 
-	                                	msg+='</ul>';
-	                                }
-	                                this.$.msg.innerHTML = msg;
-	                                /*************************************************Width Checking****************************************/
+					if (pos_x + tooltip_width >= width) {
+						pos_x = pos_x - tooltip_width - 5;
 
+						if (pos_x <= newData[this._i_value].x && pos_x >= newData[this._i_value].x - newData[this._i_value].el_width)
+							pos_x = newData[this._i_value].x - newData[this._i_value].el_width - tooltip_width - 10;
 
-	                                if(pos_x+tooltip_width >= width){
-	                                	pos_x= pos_x-tooltip_width-5;
+					}
 
-	                                	if(pos_x <= newData[this._i_value].x && pos_x>= newData[this._i_value].x-newData[this._i_value].el_width)
-	                                		pos_x=newData[this._i_value].x-newData[this._i_value].el_width-tooltip_width-10;
+					if (pos_x <= 0) {
+						pos_x = pos_x - pos_x + 5;
+					}
+					/**********************************************Width Checking Ends****************************************/
 
+					/**************************************************Height Checking****************************************/
 
-	                                }
+					if (pos_y + tooltip_height >= height) {
+						if (pos_y + newData[this._i_value].el_height >= height) {
+							pos_y = pos_y - tooltip_height - 15;
+						} else
+							pos_y = pos_y - tooltip_height - newData[this._i_value].el_height - 15;
 
-	                                if(pos_x <= 0){
-	                                	pos_x = pos_x - pos_x +5;
-	                                }
-	                                /**********************************************Width Checking Ends****************************************/
+						if (pos_y <= 0) {
+							pos_y = pos_y + tooltip_height;
 
-	                                /**************************************************Height Checking****************************************/	
+						}
+					}
+					/*******************************Height Checking Ends*************************************************/
 
+					this.$.tooltip.style.left = (pos_x + 5) + 'px';
+					this.$.tooltip.style.top = (pos_y + 10) + 'px';
 
-	                                if(pos_y+tooltip_height >= height)
-	                                {
-	                                	if(pos_y+newData[this._i_value].el_height >= height)
-	                                	{
-	                                		pos_y= pos_y-tooltip_height-15;
-	                                	}
-	                                	else
-	                                		pos_y = pos_y-tooltip_height-newData[this._i_value].el_height-15;
+				}
+				/*****************************************If Ends*****************************************************/
 
-	                                	if(pos_y <=0){
-	                                		pos_y = pos_y + tooltip_height;
+				else {
 
-	                                	}
-	                                }
-	                                /*******************************Height Checking Ends*************************************************/
+					this._newData = [];
+					this._check = true;
+					this.welcomeShow = false;
+					this._i_value = -1;
+					this.$.overlay.style.display = "none";
+					this.$.overlay_back.style.display = "none";
 
-	                                this.$.tooltip.style.left = (pos_x+5)+'px';
-	                                this.$.tooltip.style.top = (pos_y+10)+'px';	
+				}
 
+			},
 
+			_fetch : function() {
+				this.$.overlay.style.visibility = "visible";
+				this.$.overlay_back.style.visibility = "visible";
 
-	                            }
-	                            /*****************************************If Ends*****************************************************/
+				/*************************************** Styling Using JavaScript******************************/
+				if (this._newData.length == 0) {
+					this.$.overlay.style.display = "none";
+					this.$.overlay_back.style.display = "none";
+				} else if (!this.welcomeShow || ("wlcm" in this._cookies)) {
+					this._i_value++;
+					this._renderTooltip();
+				} else {
 
-							 	else 
-							 	{
+					this.$.msg.innerHTML = this.welcomeMsg;
+					this.$.title.innerHTML = this.welcomeTitle;
+					this.$.previous.style.display = "none";
+					this.$.pg_no.style.display = "none";
+					this._cookies["wlcm"] = "1";
+				}
+				/*************************************Fetch Function Ends************************************************/
+			}
+		});
+    </script>
+    <!--*******************************************************Script Ends************************************* -->
 
-									this._newData=[];
-									this._check=true;
-									this.welcomeShow=false;
-									this._i_value=-1;
-									this.$.overlay.style.display="none";
-									this.$.overlay_back.style.display="none";
-
-
-								}
-
-
-									},
-
-									_fetch: function(){
-										this.$.overlay.style.visibility="visible";   
-										this.$.overlay_back.style.visibility="visible"; 
-										
-										/*************************************** Styling Using JavaScript******************************/
-										if(this._newData.length==0)
-										{
-											this.$.overlay.style.display="none";
-											this.$.overlay_back.style.display="none";
-										}
-										else if(!this.welcomeShow || ("wlcm" in this._cookies))
-										{
-											this._i_value++;
-											this._renderTooltip();
-										}
-										else 
-										{
-
-											this.$.msg.innerHTML = this.welcomeMsg;
-											this.$.title.innerHTML = this.welcomeTitle;
-											this.$.previous.style.display="none";
-											this.$.pg_no.style.display="none";
-											this._cookies["wlcm"]="1";
-										}
-										/*************************************Fetch Function Ends************************************************/
-									}
-
-
-
-								});
-							</script>
-							<!--*******************************************************Script Ends************************************* --> 
-
-						</dom-module>
+</dom-module>
