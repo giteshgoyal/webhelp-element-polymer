@@ -83,4 +83,4 @@ Clear the walk-tour-viewed key value pair from localstorage.
 document.querySelector("walk-tour")._cookies = {};
 ```
 
-Now run this._showHelp.
+Now run `this._showHelp`.
