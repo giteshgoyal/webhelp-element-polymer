@@ -70,11 +70,11 @@ this._showHelp(this.$.searchboxx ,"Search Box", ["Search Your Queries Here Power
 
 ```
 Default Values are:
-
+```js
 welcomeShow:true,
 welcomeTitle:"Welcome",
-welcomeMssg:"You can go to and fro between elements using mouse as well as keyboard (left, right keys and esc key to exit). Click on screen to move to next"
-
+welcomeMsg:"You can go to and fro between elements using mouse as well as keyboard (left, right keys and esc key to exit). Click on screen to move to next"
+```
 ### Force Restarting the tour
 
 Clear the walk-tour-viewed key value pair from localstorage.
