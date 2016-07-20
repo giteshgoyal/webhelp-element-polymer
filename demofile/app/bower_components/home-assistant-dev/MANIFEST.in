@@ -1,5 +1,0 @@
-include README.rst
-include LICENSE
-graft homeassistant
-prune homeassistant/components/frontend/www_static/home-assistant-polymer
-recursive-exclude * *.py[co]

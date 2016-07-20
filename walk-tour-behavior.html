@@ -1,0 +1,73 @@
+	<script>
+
+		var help_data = '[]';
+		var x;
+		var y;
+		window.MyBehaviors = window.MyBehaviors || {};
+		window.MyBehaviors.WalkTourBehavior = {
+			_showHelp:function( element,title, msg,version) {
+				/**************************************** Fetch Coordinates Of Target Element ***********************************************/
+				var box = element.getBoundingClientRect();
+
+				var body = document.body;
+				var docEl = document.documentElement;
+
+				var scrollTop = window.pageYOffset || docEl.scrollTop || body.scrollTop;
+				var scrollLeft = window.pageXOffset || docEl.scrollLeft || body.scrollLeft;
+
+				var clientTop = docEl.clientTop || body.clientTop || 0;
+				var clientLeft = docEl.clientLeft || body.clientLeft || 0;
+
+				var top  = box.top +  scrollTop - clientTop;
+				var left = box.left + scrollLeft - clientLeft;
+				var bottom=top+(box.bottom-box.top);
+				var right=left+(box.right-box.left);
+				var rect_width= box.right-box.left;
+				var rect_height=box.bottom-box.top;
+				
+				var w = window,
+				d = document,
+				e = d.documentElement,
+				g = d.getElementsByTagName('body')[0],
+				width = w.innerWidth || e.clientWidth || g.clientWidth,
+				height = w.innerHeight|| e.clientHeight|| g.clientHeight;
+
+				//*********************************End OF Fetch Coordinates Of Target Element ********************************************/
+
+				// *********************    Determining the position on element where to display help **********************
+			
+				if(left > width*5/6)
+					x= left;
+				else
+					x= right;
+					
+				if(top > height*2/3)
+					y= top;
+				else
+					y= bottom;
+
+					// ********************* End Of Determining the position on element where to display help **********************/
+
+	               //*************************************************** Push Data In Array  ***********************************/
+				
+				if(x!=0 && y!=0){
+				
+	                  this.fire('iron-signal', {name: 'tour', data: {
+								"id": element.id,
+								"title": title,
+								"message": msg,
+								"x" : x,
+								"y" : y,
+								"el_top":top,
+								"el_left":left,
+								"el_width":rect_width,
+								"el_height":rect_height,
+								"version":version||1
+						}});
+	                  }
+
+	            //*************************************************End Of Push Data In Array  ***********************************/
+			}
+			
+		};
+	</script>
