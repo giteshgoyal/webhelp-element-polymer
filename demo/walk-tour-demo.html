@@ -1,0 +1,77 @@
+<link rel="import" href="../../polymer/polymer.html">
+
+<link rel="import" href="../walk-tour.html">
+<link rel="import" href="../walk-tour-behavior.html">
+<link rel="import" href="../walk-tour-icons.html">
+<link rel="import" href="../../app-storage/app-localstorage/app-localstorage-document.html">
+
+<dom-module id="walk-tour-demo">
+
+  <style>
+#container {
+
+  text-align: center;
+}
+    #div1 {
+
+      height: 150px;
+      width: 150px;
+      background: blue;
+      display: inline-block;
+    }
+
+    #div2 {
+
+      height: 150px;
+      width: 250px;
+      background: red;
+      display: inline-block;
+    }
+
+    #div3 {
+
+      height: 150px;
+      width: 150px;
+      background: green;
+      display: inline-block;
+    }
+
+  </style>
+
+  <template>
+
+    <div id="container">
+
+      <walk-tour></walk-tour>
+
+      <div id="div1" ></div>
+
+      <div id="div2" ></div>
+
+      <div id="div3" ></div>
+
+    </div>
+
+  </template>
+
+  <script>
+Polymer({
+  is : "walk-tour-demo",
+
+  behaviors: [MyBehaviors.WalkTourBehavior],
+
+  attached : function() {
+    this.async(function() {
+
+      /*************Elelment Id , Title , Message, Version Number ******************************** */
+      this._showHelp(this.$.div1, "DashBoard", "This is the Main Page .View User Preferences Here!");
+      this._showHelp(this.$.div2, "Charts Menu", "View Your Statistics Here!");
+      this._showHelp(this.$.div3, "Maps Menu", "View Different Locations on Map Here !");
+
+    }, 1000);
+
+  },
+});
+  </script>
+
+</dom-module>

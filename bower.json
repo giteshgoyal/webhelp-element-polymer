@@ -1,0 +1,45 @@
+{
+  "name": "walk-tour",
+  "description": "The easiest way to show people how to use your website and What's New In It",
+  "main": "walk-tour.html",
+  "authors": [
+    "Gitesh Goyal <giteshgoyal77@gmail.com>",
+    "Janit Bidhan  <janitbidhan@gmail.com>",
+    "Srishti Piplani <srishti.piplani10@gmail.com>",
+    "Pranita Sood   <soodpranita@gmail.com>",
+    "Maxime Dhalluin <maxime.dhalluin@hotmail.fr>",
+    "Arun Kumar TK <aruntknambiar@gmail.com>"
+  ],
+  "license": "MIT",
+  "keywords": [
+    "polymer",
+    "polymer tour",
+    "walk-tour",
+    "web-tour",
+    "help",
+    "customizable",
+    "website-tour",
+    "tour",
+    "guide",
+    "info",
+    "web-components",
+    "custom-element"
+  ],
+  "homepage": "https://github.com/giteshgoyal/webhelp-element-polymer.git",
+  "dependencies": {
+    "app-storage":"PolymerElements/app-storage#^0.9.4",
+    "iron-a11y-keys":"PolymerElements/iron-a11y-keys#^1.0.0",
+    "iron-icon":"PolymerElements/iron-icon#^1.0.0",
+    "iron-iconset-svg" :"PolymerElements/iron-iconset-svg#^1.0.0",
+    "iron-signals":"PolymerElements/iron-signals#^1.0.0",
+    "paper-icon-button":"PolymerElements/paper-icon-button#^1.0.0",
+    "polymer": "Polymer/polymer#^1.1.1"
+  },
+  "ignore": [
+    "**/.*",
+    "node_modules",
+    "bower_components",
+    "test",
+    "tests"
+  ]
+}
